@@ -1,7 +1,7 @@
 Estamos en un chat de grupo en el colaborador y nuestro equipo comienza esta conversación.
 Vamos a suponer que yo puedo/debo actuar en esta situación.
 
-¿Cómo continuarías la conversación para mediar en esto?
+¿Cómo continuarías la conversación para mediar en esto? ¿Que feedback le darías a cada una de las partes?
 
 
 ```text
