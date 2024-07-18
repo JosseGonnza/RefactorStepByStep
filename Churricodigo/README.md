@@ -17,11 +17,9 @@ Son funciones de Azure Functions triggereadas por mensajes en sus respectivas co
 
 Intención del Código
 
-Procesamiento de Mensajes: Los métodos ConsumeKnownPropertyQueue y ConsumeUnknownPropertyQueue se encargan de procesar mensajes provenientes de las colas de Service Bus, actualizar transacciones de órdenes de compra y manejar errores.
-
-Manejo de Errores y Retries: El código incluye lógica para manejar errores específicos y reintentar operaciones en caso de fallos, utilizando técnicas como dead-lettering y reintentos exponenciales.
-
-Notificación y Telemetría: Utiliza TelemetryClient para rastrear eventos y excepciones, y envía notificaciones por correo electrónico en caso de errores críticos.
+- Procesamiento de Mensajes.
+- Manejo de Errores y Retries.
+- Notificación y Telemetría.
 
 
 ## Posibles comentarios
