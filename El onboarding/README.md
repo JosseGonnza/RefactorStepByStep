@@ -1,4 +1,4 @@
-Una situación tensa el día de onboarding a un colaborador. Te añaden al chat del equipo porque ha ocurrido un bug en Producción, existen 3 interlocutores:
+Una situación tensa el día de mi onboarding a un colaborador. Te añaden al chat del equipo porque ha ocurrido un bug en Producción, existen 3 interlocutores:
 
 - Pepito: El Tech Manager
 - Calatrava: El arquitecto
