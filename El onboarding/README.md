@@ -32,7 +32,7 @@ yo no tengo nada
 esto lo hicimos el tiempo que estuve desterrado por mal comportamiento 😋
 
 [13:04] Calatrava responde a: "Amancio: esto lo hicimos el tiempo que estuve desterrado por mal comportamiento 😋":
-dentro del malcomportamiento estaba el no documentar las cosas?
+dentro del mal comportamiento estaba el no documentar las cosas?
 
 [13:54] Amancio: 
 Lo puse en el planio, seguro que tu tienes la copia de seguridad 
@@ -41,6 +41,7 @@ Lo puse en el planio, seguro que tu tienes la copia de seguridad
 Pregúntale a Erwin
 ```
 
+¿Ustedes que harían? ¿Cuando darían el feedback? ¿A quién?
 
 Posibles comentarios
 
