@@ -77,34 +77,3 @@ FROM (SELECT Itbs.inttid,
         AND Itbs.intreplacement_state != 4) query; 
 ```
 
-Posibles comentarios
-
-Comentario 1: Complejidad de la Consulta
-Observación: "Cuando reviso esta consulta, noto que tiene varias subconsultas anidadas y múltiples condiciones en la cláusula CASE."
-Sentimientos: "Me siento preocupado..."
-Necesidades: "...porque la complejidad de la consulta puede dificultar su mantenimiento y comprensión futura."
-Peticiones: "¿Podrías considerar refactorizar esta consulta en varias vistas o funciones más pequeñas y manejables para mejorar su claridad y mantenimiento?"
-
-Comentario 2: Uso de Subconsultas en la Cláusula CASE
-Observación: "He notado que hay subconsultas dentro de la cláusula CASE para determinar el estado."
-Sentimientos: "Me siento inquieto..."
-Necesidades: "...porque el uso de subconsultas en la cláusula CASE puede afectar negativamente el rendimiento."
-Peticiones: "¿Sería posible mover estas subconsultas a una etapa previa, utilizando tablas temporales o vistas comunes de tabla (CTE) para mejorar el rendimiento y la legibilidad?"
-
-Comentario 3: Falta de Índices en las Subconsultas
-Observación: "Veo que las subconsultas que cuentan registros en it_tbuffer_hrefs podrían beneficiarse del uso de índices."
-Sentimientos: "Me siento preocupado..."
-Necesidades: "...porque la falta de índices adecuados puede ralentizar significativamente el rendimiento de la consulta."
-Peticiones: "¿Podrías revisar si existen índices apropiados en las columnas intreferenced_ut_type, intacceptance_level, logfirm, intrejection_type, y intfirm_acceptance_level en la tabla it_tbuffer_hrefs para optimizar estas subconsultas?"
-
-Comentario 4: Legibilidad del Código
-Observación: "He notado que la consulta es larga y difícil de seguir debido a las múltiples capas de lógica anidada."
-Sentimientos: "Me siento confundido..."
-Necesidades: "...porque la legibilidad del código es crucial para el mantenimiento y la colaboración efectiva."
-Peticiones: "¿Podrías añadir comentarios detallados a lo largo de la consulta para explicar las diferentes partes y su propósito? Esto podría ayudar a otros desarrolladores a entender mejor tu lógica."
-
-Comentario 5: Uso de Literales Mágicos
-Observación: "En la consulta se utilizan varios valores literales, como 'rejectedbysdi', 'rejectedcustomer', y 2471805."
-Sentimientos: "Me siento preocupado..."
-Necesidades: "...porque los literales mágicos pueden dificultar la comprensión y el mantenimiento del código."
-Peticiones: "¿Podrías considerar definir estos valores como constantes o parámetros con nombres descriptivos para mejorar la claridad y facilitar posibles cambios futuros?"

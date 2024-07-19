@@ -42,7 +42,3 @@ Pregúntale a Erwin
 ```
 
 ¿Ustedes que harían? ¿Cuando darían el feedback? ¿A quién?
-
-Posibles comentarios
-
-Estamos jodidos...

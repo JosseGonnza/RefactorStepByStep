@@ -6,6 +6,6 @@ Vamos a suponer que yo puedo/debo actuar en esta situación.
 
 ```text
 A: Siempre me toca hacer las tareas más complicadas mientras otros tienen tareas más simples. No creo que esto sea justo.
-B: Bueno, si te quejas tanto, ¿por qué no lo dices directamente al jefe?
+B: Bueno, si te quejas tanto, ¿por qué no lo dices directamente al jefe de equipo?
 ```
 
