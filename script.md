@@ -24,21 +24,43 @@ puntos y el porqué). Tal vez podrías considerar añadir ejemplos adicionales l
 Reflexiona sobre el objetivo: Clarifica __por qué__ estás dando feedback y __qué esperas__ lograr.
 __Reúne ejemplos específicos__: Ten a mano __ejemplos concretos__ de comportamientos o __acciones__ para respaldar tu feedback.
 
-### Establece el Contexto
+__Evita ataques personales__: __Céntrate en acciones__ y comportamientos, no en la personalidad de la persona.
+
+Ejemplo: En lugar de decir "Eres irresponsable", decir "El retraso en la entrega afectó al equipo."
+
+__Ofrece Feedback Balanceado__
+
+Busca dar feedback de ambos tipos: constructivo y positivo. No centrarte en uno de ellos solamente.
+
+Incluye aspectos positivos: Reconoce lo que se ha hecho bien junto con las áreas de mejora.
+Ejemplo: "Aprecio mucho tu dedicación al proyecto, y creo que con un mejor manejo del tiempo, podremos lograr aún más."
+
+
+### Busca un buen momento
 
 Escoge un momento y lugar apropiados: Asegúrate de que la persona esté disponible y en un entorno adecuado para una conversación constructiva.
 Pide permiso: Pregunta si es un buen momento para dar feedback. Esto muestra respeto y consideración.
 Ejemplo: "¿Tienes un momento para hablar sobre el proyecto?"
 
-### Utiliza la Estructura de la Comunicación No Violenta (CNV)
+__Constructivo en privado__
 
-Observación: Describe lo que observaste de manera objetiva, sin juicios.
+__Positivo en público__
+
+### Estructura el mensaje con CNV
+
+__Observación__: Describe lo que observaste de manera objetiva, sin juicios.
 Ejemplo: "Cuando vi que el informe se entregó dos días después de la fecha límite..."
-Sentimientos: Expresa cómo te sientes en respuesta a la observación.
+
+
+__Sentimientos__: Expresa cómo te sientes en respuesta a la observación.
 Ejemplo: "...me sentí preocupado..."
-Necesidades: Identifica y comunica las necesidades o valores subyacentes.
+
+
+__Necesidades__: Identifica y comunica las necesidades o valores subyacentes.
 Ejemplo: "...porque necesitamos cumplir con los plazos para mantener la confianza de nuestros clientes."
-Peticiones: Haz una petición clara y específica para el futuro.
+
+
+__Peticiones__: Haz una petición clara y específica para el futuro.
 Ejemplo: "¿Podrías informar al equipo si crees que no vas a poder cumplir con una fecha límite, para que podamos ajustar el plan?"
 
 ### Escucha Activa
@@ -47,28 +69,19 @@ __Permite una respuesta__: Dale a la persona la oportunidad de expresar su persp
 Practica la escucha activa: Presta atención, muestra empatía y evita interrumpir.
 Ejemplo: "Entiendo que tenías muchas tareas esa semana, ¿hay algo que podamos hacer para evitar estos retrasos en el futuro?"
 
-### Enfócate en el Comportamiento, no en la Persona
-
-Evita ataques personales: Céntrate en acciones y comportamientos, no en la personalidad de la persona.
-Ejemplo: En lugar de decir "Eres irresponsable", decir "El retraso en la entrega afectó al equipo."
-
-### Sé Específico y Proporciona Soluciones
+### Plantea sugerencias de mejora
 
 Ofrece ejemplos claros: Menciona casos específicos y cómo impactaron.
 Sugiere acciones concretas: Propón maneras específicas de mejorar.
 Ejemplo: "Para mejorar la gestión del tiempo, ¿podríamos establecer recordatorios de las fechas límite?"
 
-### Ofrece Feedback Balanceado
-
-Incluye aspectos positivos: Reconoce lo que se ha hecho bien junto con las áreas de mejora.
-Ejemplo: "Aprecio mucho tu dedicación al proyecto, y creo que con un mejor manejo del tiempo, podremos lograr aún más."
-
-### Plan de Acción y Seguimiento
+### Apoya en las acciones
 
 Desarrolla un plan juntos: Colabora en un plan de acción para mejorar.
-Establece un seguimiento: Acuerda un momento para revisar el progreso.
-Ejemplo: "¿Podemos reunirnos en dos semanas para ver cómo van las cosas?"
 
+Establece un seguimiento: Acuerda un momento para revisar el progreso.
+
+Ejemplo: "¿Podemos reunirnos en dos semanas para ver cómo van las cosas?"
 
 ## Comunicacion no violenta
 
