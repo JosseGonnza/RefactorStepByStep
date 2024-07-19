@@ -1,5 +1,7 @@
 Nos llega este mensaje directo a nuestro Slack y tenemos que responder. ¿Cómo lo harías?
 
+Opera: sistema que envía las peticiones al sistema.
+
 ```text
 Perry: Hola Pedro, este trabajo se lo estaba pidiendo a infraestructura hasta ayer.
 
