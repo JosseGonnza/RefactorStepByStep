@@ -43,7 +43,7 @@ Ejemplo: "¿Podrías informar al equipo si crees que no vas a poder cumplir con 
 
 ### Escucha Activa
 
-__Permite una respuesta_: Dale a la persona la oportunidad de expresar su perspectiva.
+__Permite una respuesta__: Dale a la persona la oportunidad de expresar su perspectiva.
 Practica la escucha activa: Presta atención, muestra empatía y evita interrumpir.
 Ejemplo: "Entiendo que tenías muchas tareas esa semana, ¿hay algo que podamos hacer para evitar estos retrasos en el futuro?"
 
