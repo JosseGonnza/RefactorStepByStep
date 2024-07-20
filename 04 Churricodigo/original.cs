@@ -32,7 +32,7 @@ public class QueueConsumer
     private const string ChocoName = "CHOCO";
     private const int ChocoAppId = 12847924;
     private const string GstockName = "GStock";
-    private const int GstockAppid = 12543679;
+    private const int GstockAppId = 12543679;
     private const int MaxRetryCount = 3;
     private const string RetryCount = "RetryCount";
     
@@ -50,6 +50,11 @@ public class QueueConsumer
         _errorNotificationSettings = errorNotificationSettings.Value;
     }
 
+
+
+
+    // Activador | Conexión | Mensaje recibido | Acciones del mensaje
+    // Dividir en métodos más pequeños
     [Function("ConsumeKnownPropertyQueue")]
     public async Task ConsumeKnownPropertyQueue(
         [ServiceBusTrigger("%ServiceBusKnownPropertyQueueName%", Connection = "ServiceBusKnownPropertyConnection")]
@@ -65,45 +70,89 @@ public class QueueConsumer
             var purchaseOrderTransaction = await GetPurchaseOrderTransaction(messagePurchaseOrder);
             purchaseOrderTransaction.Traces.Add(Trace.AsMessageReceived());
             await _purchaseOrderTransactionRepository.Save(purchaseOrderTransaction);
-            try
-            {
-                if (IsPurchaseOrderCreationTimeMoreThanFifteenMinutesAgo(purchaseOrderTransaction))
-                {
-                    purchaseOrderTransaction.SetErrorWithDetail(ErrorDetail.DeliveryTimeExceeded);
-                    await messageActions.DeadLetterMessageAsync(receivedMessage, deadLetterReason: ErrorDetail.DeliveryTimeExceeded.ToString());
-                    await _emailProxy.Send(new Email(purchaseOrderTransaction.PurchaseOrder.Reference,
-                        purchaseOrderTransaction.OrderId, _errorNotificationSettings.EmailRecipients,
-                        _errorNotificationSettings.SenderAddress));
-                }
-                else if (IsLastRetry(receivedMessage))
-                {
-                    telemetryProperties.Add("RetryCountMax", GetRetryCount(receivedMessage).ToString());
-                    await messageActions.DeadLetterMessageAsync(receivedMessage, deadLetterReason: ErrorDetail.RetryCountExceeded.ToString());
-                    purchaseOrderTransaction.SetErrorWithDetail(ErrorDetail.RetryCountExceeded);
-                    await _emailProxy.Send(new Email(purchaseOrderTransaction.PurchaseOrder.Reference,
-                        purchaseOrderTransaction.OrderId, _errorNotificationSettings.EmailRecipients,
-                        _errorNotificationSettings.SenderAddress));
-                }
-                else
-                {
-                    await ProcessPurchaseOrderTransactionForKnownProperty(purchaseOrderTransaction, telemetryProperties);
-                }
-                
-                await _purchaseOrderTransactionRepository.Save(purchaseOrderTransaction);
-            }
-            catch (ErrorDetailException exception)
-            {
-                await ProcessErrorDetailException(purchaseOrderTransaction, exception, telemetryProperties);
-            }
+
+            // Ecapsulado
+            await MessageConsumeKnown(purchaseOrderTransaction, messageActions, telemetryProperties, receivedMessage);
+            
         }
         catch (Exception exception)
         {
-            var serviceBusMessageExtensions = new ServiceBusMessageExtensions(_knownPropertySender, telemetryProperties);
-            await serviceBusMessageExtensions.RetryWithExponentialBackoff(messageActions, receivedMessage, MaxRetryCount);
-            _telemetryClient.TrackException(exception, telemetryProperties);
-            throw;
+            // Encapsulado
+            await ExcepcionPedido(telemetryProperties, receivedMessage, messageActions, exception);
         }
     }
+
+
+    //Nuevo Método - Excepción TryCatch
+    private async Task ExcepcionPedido(IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage,
+        ServiceBusMessageActions messageActions, Exception exception)
+    {
+        var serviceBusMessageExtensions = new ServiceBusMessageExtensions(_knownPropertySender, telemetryProperties);
+        await serviceBusMessageExtensions.RetryWithExponentialBackoff(messageActions, receivedMessage, MaxRetryCount);
+        _telemetryClient.TrackException(exception, telemetryProperties);
+        throw;
+    }
+
+
+
+    //Nuevo Método - Lógica del TryCatch interior para Known
+    private async Task MessageConsumeKnown(PurchaseOrderTransaction purchaseOrderTransaction, ServiceBusMessageActions messageActions,
+        IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage)
+    {
+        try
+        {
+            if (IsPurchaseOrderCreationTimeMoreThanFifteenMinutesAgo(purchaseOrderTransaction))
+            {
+                // Encapsulado
+                await InterceptorSiExcedeElTiempo(purchaseOrderTransaction, messageActions, receivedMessage)
+            }
+            else if (IsLastRetry(receivedMessage))
+            {
+                // Encapsulado
+                await InterceptorSiEsElUltimoIntento(telemetryProperties, receivedMessage, messageActions, purchaseOrderTransaction)
+            }
+            else
+            {
+                // Encapsulado
+                await ProcessPurchaseOrderTransactionForKnownProperty(purchaseOrderTransaction, telemetryProperties);
+            }
+
+            await _purchaseOrderTransactionRepository.Save(purchaseOrderTransaction);
+        }
+        catch (ErrorDetailException exception)
+        {
+            await ProcessErrorDetailException(purchaseOrderTransaction, exception, telemetryProperties);
+        }
+    }
+
+
+    // Método más pequeño
+    private async Task InterceptorSiExcedeElTiempo(PurchaseOrderTransaction purchaseOrderTransaction, ServiceBusMessageActions messageActions,
+        ServiceBusReceivedMessage receivedMessage)
+    {
+        purchaseOrderTransaction.SetErrorWithDetail(ErrorDetail.DeliveryTimeExceeded);
+        await messageActions.DeadLetterMessageAsync(receivedMessage, deadLetterReason: ErrorDetail.DeliveryTimeExceeded.ToString());
+        await _emailProxy.Send(new Email(purchaseOrderTransaction.PurchaseOrder.Reference,
+            purchaseOrderTransaction.OrderId, _errorNotificationSettings.EmailRecipients,
+            _errorNotificationSettings.SenderAddress));
+    }
+
+    // Método más pequeño
+    private async Task InterceptorSiEsElUltimoIntento(IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage,
+        ServiceBusMessageActions messageActions, PurchaseOrderTransaction purchaseOrderTransaction)
+    {
+        telemetryProperties.Add("RetryCountMax", GetRetryCount(receivedMessage).ToString());
+        await messageActions.DeadLetterMessageAsync(receivedMessage, deadLetterReason: ErrorDetail.RetryCountExceeded.ToString());
+        purchaseOrderTransaction.SetErrorWithDetail(ErrorDetail.RetryCountExceeded);
+        await _emailProxy.Send(new Email(purchaseOrderTransaction.PurchaseOrder.Reference,
+            purchaseOrderTransaction.OrderId, _errorNotificationSettings.EmailRecipients,
+            _errorNotificationSettings.SenderAddress));
+    }
+
+
+
+
+
 
     [Function("ConsumeUnknownPropertyQueue")]
     public async Task ConsumeUnknownPropertyQueue(
@@ -121,46 +170,50 @@ public class QueueConsumer
             var purchaseOrderTransaction = await GetPurchaseOrderTransaction(messagePurchaseOrder);
             purchaseOrderTransaction.Traces.Add(Trace.AsMessageReceived());
             await _purchaseOrderTransactionRepository.Save(purchaseOrderTransaction);
-            
-            try
-            {
-                if (IsPurchaseOrderCreationTimeMoreThanFifteenMinutesAgo(purchaseOrderTransaction))
-                {
-                    purchaseOrderTransaction.SetErrorWithDetail(ErrorDetail.DeliveryTimeExceeded);
-                    await messageActions.DeadLetterMessageAsync(receivedMessage, deadLetterReason: ErrorDetail.DeliveryTimeExceeded.ToString());
-                    await _emailProxy.Send(new Email(purchaseOrderTransaction.PurchaseOrder.Reference,
-                        purchaseOrderTransaction.OrderId, _errorNotificationSettings.EmailRecipients,
-                        _errorNotificationSettings.SenderAddress));
-                }
-                else if (IsLastRetry(receivedMessage))
-                {
-                    telemetryProperties.Add("RetryCountMax", GetRetryCount(receivedMessage).ToString());
-                    await messageActions.DeadLetterMessageAsync(receivedMessage, deadLetterReason: ErrorDetail.RetryCountExceeded.ToString());
-                    purchaseOrderTransaction.SetErrorWithDetail(ErrorDetail.RetryCountExceeded);
-                    await _emailProxy.Send(new Email(purchaseOrderTransaction.PurchaseOrder.Reference,
-                        purchaseOrderTransaction.OrderId, _errorNotificationSettings.EmailRecipients,
-                        _errorNotificationSettings.SenderAddress));
-                }
-                else
-                {
-                    await ProcessPurchaseOrderTransactionForUnknownProperty(purchaseOrderTransaction, telemetryProperties);
-                }
 
-                await _purchaseOrderTransactionRepository.Save(purchaseOrderTransaction);
-            }
-            catch (ErrorDetailException exception)
-            {
-                await ProcessErrorDetailException(purchaseOrderTransaction, exception, telemetryProperties);
-            }
+            // Lógica Encapsulada
+            await MessageConsumeUnknown(purchaseOrderTransaction, messageActions, telemetryProperties, receivedMessage);
         }
         catch (Exception exception)
         {
-            var serviceBusMessageExtensions = new ServiceBusMessageExtensions(_unknownPropertySender, telemetryProperties);
-            await serviceBusMessageExtensions.RetryWithExponentialBackoff(messageActions, receivedMessage, MaxRetryCount);
-            _telemetryClient.TrackException(exception, telemetryProperties);
-            throw;
+            // Misma excepción que para ConsumeknownPropertyQueue
+            await ExcepcionPedido(telemetryProperties, receivedMessage, messageActions, exception);
         }
     }
+
+
+    //Nuevo Método - Lógica del TryCatch interior para ConsumeUnknownPropertyQueue
+    private async Task MessageConsumeUnknown(PurchaseOrderTransaction purchaseOrderTransaction, ServiceBusMessageActions messageActions,
+        IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage)
+    {
+        try
+        {
+            if (IsPurchaseOrderCreationTimeMoreThanFifteenMinutesAgo(purchaseOrderTransaction))
+            {
+                // Mismo método que ConsumeknownPropertyQueue
+                await InterceptorSiExcedeElTiempo(purchaseOrderTransaction, messageActions, receivedMessage)
+                }
+            else if (IsLastRetry(receivedMessage))
+            {
+                // Mismo método que ConsumeknownPropertyQueue
+                await InterceptorSiEsElUltimoIntento(telemetryProperties, receivedMessage, messageActions, purchaseOrderTransaction)
+                }
+            else
+            {
+                await ProcessPurchaseOrderTransactionForUnknownProperty(purchaseOrderTransaction, telemetryProperties);
+            }
+
+            await _purchaseOrderTransactionRepository.Save(purchaseOrderTransaction);
+        }
+        catch (ErrorDetailException exception)
+        {
+            await ProcessErrorDetailException(purchaseOrderTransaction, exception, telemetryProperties);
+        }
+    }
+
+
+
+
 
     private bool IsLastRetry(ServiceBusReceivedMessage receivedMessage)
     {
@@ -186,24 +239,21 @@ public class QueueConsumer
         return purchaseOrderTransaction;
     }
 
+
+
+
     private async Task ProcessPurchaseOrderTransactionForKnownProperty(PurchaseOrderTransaction purchaseOrderTransaction,
         IDictionary<string, string> telemetryProperties)
     {
-        var possiblePropertyId = await _appGatewayProxy.GetUserId((Guid)(purchaseOrderTransaction.PurchaseOrder).Client.PropertyId);
-        var propertyId = possiblePropertyId.ValueOr(() => throw new ErrorDetailException(ErrorDetail.ExternalUserIdNotFound));
-
-        var possibleCustomer = await _appGatewayProxy.GetCustomer(propertyId);
-        var customer = possibleCustomer.ValueOr(() => throw new ErrorDetailException(ErrorDetail.PropertyIdNotFound));
-
-        var possibleClient = await _appGatewayProxy.GetClient(customer.ParentId);
-        var client = possibleClient.ValueOr(() => throw new ErrorDetailException(ErrorDetail.ClientIdNotFound));
+        // Lógica Encapsulada para acceder a las variables debajo
+        var (client, customer, possibleCustomer) = await GetClientAndCustomer(purchaseOrderTransaction);
 
         await ErrorDetailIfTaxIdCountryIsNotValid(purchaseOrderTransaction);
 
         var possibleSupplier = await GetPossibleSupplier(purchaseOrderTransaction);
         var heritableClientSupplierRelations =
             await ObtainHeritableClientSupplierRelations(possibleSupplier, customer, purchaseOrderTransaction);
-        var realSender = new RealSender(GstockName, GstockAppid);
+        var realSender = new RealSender(GstockName, GstockAppId);
         var universalIntegratedTransactionParameters = new UniversalIntegratedTransactionParameters(
             possibleSupplier, possibleCustomer, 
             heritableClientSupplierRelations, purchaseOrderTransaction,
@@ -215,7 +265,24 @@ public class QueueConsumer
 
         purchaseOrderTransaction.TraceAsSentToApp(tid);
     }
+
+    // Método más pequeño y manejable
+    private async Task<(Client client, Customer customer, PossibleCustomer possibleCustomer)> GetClientAndCustomer(PurchaseOrderTransaction purchaseOrderTransaction)
+    {
+        var possiblePropertyId = await _appGatewayProxy.GetUserId((Guid)(purchaseOrderTransaction.PurchaseOrder).Client.PropertyId);
+        var propertyId = possiblePropertyId.ValueOr(() => throw new ErrorDetailException(ErrorDetail.ExternalUserIdNotFound));
+
+        var possibleCustomer = await _appGatewayProxy.GetCustomer(propertyId);
+        var customer = possibleCustomer.ValueOr(() => throw new ErrorDetailException(ErrorDetail.PropertyIdNotFound));
+
+        var possibleClient = await _appGatewayProxy.GetClient(customer.ParentId);
+        var client = possibleClient.ValueOr(() => throw new ErrorDetailException(ErrorDetail.ClientIdNotFound));
+    }
     
+
+
+
+
     private async Task ProcessPurchaseOrderTransactionForUnknownProperty(PurchaseOrderTransaction purchaseOrderTransaction,
         IDictionary<string, string> telemetryProperties)
     {
@@ -235,6 +302,10 @@ public class QueueConsumer
 
         purchaseOrderTransaction.TraceAsSentToApp(tid);
     }
+
+
+
+
 
     private async Task ErrorDetailIfTaxIdCountryIsNotValid(PurchaseOrderTransaction purchaseOrderTransaction)
     {
@@ -301,6 +372,8 @@ public class QueueConsumer
             purchaseOrderTransaction.PurchaseOrder.Supplier.Country);
     }
 
+
+    // Relación cliente proveedor heredable
     private async Task<List<HeritableClientSupplierRelation>> ObtainHeritableClientSupplierRelations(
         Option<Supplier> supplier, Customer customer, PurchaseOrderTransaction purchaseOrderTransaction)
     {
