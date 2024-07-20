@@ -50,9 +50,6 @@ public class QueueConsumer
         _errorNotificationSettings = errorNotificationSettings.Value;
     }
 
-
-
-
     // Activador | Conexión | Mensaje recibido | Acciones del mensaje
     // Dividir en métodos más pequeños
     [Function("ConsumeKnownPropertyQueue")]
@@ -78,13 +75,12 @@ public class QueueConsumer
         catch (Exception exception)
         {
             // Encapsulado
-            await ExcepcionPedido(telemetryProperties, receivedMessage, messageActions, exception);
+            await OrderException(telemetryProperties, receivedMessage, messageActions, exception);
         }
     }
 
-
     //Nuevo Método - Excepción TryCatch
-    private async Task ExcepcionPedido(IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage,
+    private async Task OrderException(IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage,
         ServiceBusMessageActions messageActions, Exception exception)
     {
         var serviceBusMessageExtensions = new ServiceBusMessageExtensions(_knownPropertySender, telemetryProperties);
@@ -92,8 +88,6 @@ public class QueueConsumer
         _telemetryClient.TrackException(exception, telemetryProperties);
         throw;
     }
-
-
 
     //Nuevo Método - Lógica del TryCatch interior para Known
     private async Task MessageConsumeKnown(PurchaseOrderTransaction purchaseOrderTransaction, ServiceBusMessageActions messageActions,
@@ -104,12 +98,12 @@ public class QueueConsumer
             if (IsPurchaseOrderCreationTimeMoreThanFifteenMinutesAgo(purchaseOrderTransaction))
             {
                 // Encapsulado
-                await InterceptorSiExcedeElTiempo(purchaseOrderTransaction, messageActions, receivedMessage)
+                await HandleTimeExceeded(purchaseOrderTransaction, messageActions, receivedMessage)
             }
             else if (IsLastRetry(receivedMessage))
             {
                 // Encapsulado
-                await InterceptorSiEsElUltimoIntento(telemetryProperties, receivedMessage, messageActions, purchaseOrderTransaction)
+                await HandleRetryCountExceeded(telemetryProperties, receivedMessage, messageActions, purchaseOrderTransaction)
             }
             else
             {
@@ -125,9 +119,8 @@ public class QueueConsumer
         }
     }
 
-
     // Método más pequeño
-    private async Task InterceptorSiExcedeElTiempo(PurchaseOrderTransaction purchaseOrderTransaction, ServiceBusMessageActions messageActions,
+    private async Task HandleTimeExceeded(PurchaseOrderTransaction purchaseOrderTransaction, ServiceBusMessageActions messageActions,
         ServiceBusReceivedMessage receivedMessage)
     {
         purchaseOrderTransaction.SetErrorWithDetail(ErrorDetail.DeliveryTimeExceeded);
@@ -138,7 +131,7 @@ public class QueueConsumer
     }
 
     // Método más pequeño
-    private async Task InterceptorSiEsElUltimoIntento(IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage,
+    private async Task HandleRetryCountExceeded(IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage,
         ServiceBusMessageActions messageActions, PurchaseOrderTransaction purchaseOrderTransaction)
     {
         telemetryProperties.Add("RetryCountMax", GetRetryCount(receivedMessage).ToString());
@@ -148,11 +141,6 @@ public class QueueConsumer
             purchaseOrderTransaction.OrderId, _errorNotificationSettings.EmailRecipients,
             _errorNotificationSettings.SenderAddress));
     }
-
-
-
-
-
 
     [Function("ConsumeUnknownPropertyQueue")]
     public async Task ConsumeUnknownPropertyQueue(
@@ -181,7 +169,6 @@ public class QueueConsumer
         }
     }
 
-
     //Nuevo Método - Lógica del TryCatch interior para ConsumeUnknownPropertyQueue
     private async Task MessageConsumeUnknown(PurchaseOrderTransaction purchaseOrderTransaction, ServiceBusMessageActions messageActions,
         IDictionary<string, string> telemetryProperties, ServiceBusReceivedMessage receivedMessage)
@@ -191,12 +178,12 @@ public class QueueConsumer
             if (IsPurchaseOrderCreationTimeMoreThanFifteenMinutesAgo(purchaseOrderTransaction))
             {
                 // Mismo método que ConsumeknownPropertyQueue
-                await InterceptorSiExcedeElTiempo(purchaseOrderTransaction, messageActions, receivedMessage)
+                await HandleTimeExceeded(purchaseOrderTransaction, messageActions, receivedMessage)
                 }
             else if (IsLastRetry(receivedMessage))
             {
                 // Mismo método que ConsumeknownPropertyQueue
-                await InterceptorSiEsElUltimoIntento(telemetryProperties, receivedMessage, messageActions, purchaseOrderTransaction)
+                await HandleRetryCountExceeded(telemetryProperties, receivedMessage, messageActions, purchaseOrderTransaction)
                 }
             else
             {
@@ -210,10 +197,6 @@ public class QueueConsumer
             await ProcessErrorDetailException(purchaseOrderTransaction, exception, telemetryProperties);
         }
     }
-
-
-
-
 
     private bool IsLastRetry(ServiceBusReceivedMessage receivedMessage)
     {
@@ -238,9 +221,6 @@ public class QueueConsumer
             throw new Exception($"Purchase order with id {@messagePurchaseOrder.OrderId} does not exist in the database"));
         return purchaseOrderTransaction;
     }
-
-
-
 
     private async Task ProcessPurchaseOrderTransactionForKnownProperty(PurchaseOrderTransaction purchaseOrderTransaction,
         IDictionary<string, string> telemetryProperties)
@@ -279,10 +259,6 @@ public class QueueConsumer
         var client = possibleClient.ValueOr(() => throw new ErrorDetailException(ErrorDetail.ClientIdNotFound));
     }
     
-
-
-
-
     private async Task ProcessPurchaseOrderTransactionForUnknownProperty(PurchaseOrderTransaction purchaseOrderTransaction,
         IDictionary<string, string> telemetryProperties)
     {
@@ -302,10 +278,6 @@ public class QueueConsumer
 
         purchaseOrderTransaction.TraceAsSentToApp(tid);
     }
-
-
-
-
 
     private async Task ErrorDetailIfTaxIdCountryIsNotValid(PurchaseOrderTransaction purchaseOrderTransaction)
     {
@@ -371,7 +343,6 @@ public class QueueConsumer
             purchaseOrderTransaction.PurchaseOrder.Supplier.TaxId,
             purchaseOrderTransaction.PurchaseOrder.Supplier.Country);
     }
-
 
     // Relación cliente proveedor heredable
     private async Task<List<HeritableClientSupplierRelation>> ObtainHeritableClientSupplierRelations(
